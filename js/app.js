@@ -2,55 +2,32 @@
  * Create a list that holds all of your cards
  */
 
- var allCards = $('.deck').children();
- var container = $('.deck');
- var shuffleCards = [...allCards];
- var seconds = 0;
- 
+var icons = ['bicycle', 'bicycle', 'leaf', 'leaf', 'cube', 'cube', 'anchor', 'anchor', 'paper-plane-o', 'paper-plane-o', 'bolt', 'bolt', 'bomb', 'bomb', 'diamond', 'diamond'],
+    open = [],
+    match = 0,
+    steps = 0,
+    secondsCount = 0,
+    minutesCount = 0,
+    $deck = $('.deck'),
+    $scoreCard = $('#score-card'),
+    $stepCount = $('.steps'),
+    $rating = $('i'),
+    $restart = $('.restart'),
+    $seconds = $('.seconds'),
+    $minutes = $('.minutes'),
+    delay = 500,
+    rankStar = icons.length / 2,
+    rank1 = rankStar + 10,
+    rank2 = rankStar + 6,
+    rank3 = rankStar + 2;
 
-
-  function initGame() {
-    $ratingStars.removeClass('fa-star-o').addClass('fa-star');
-
-    starCounter();
-  }
-  $('.deck').one('click', function startCounter() {
-
-    function pad(val) {
-      return val > 9 ? val : "0" + val;
-    }
-    setInterval(function() {
-      $("#seconds").html(pad(++seconds % 60));
-      $("#minutes").html(pad(parseInt(seconds / 60, 10) + ' :'));
-    }, 1000);
-    return seconds;
-
-  });
-
-
-  function stopCounter() {
-    clearInterval(function() {
-      $("#seconds").html(pad(++seconds % 60));
-      $("#minutes").html(pad(parseInt(seconds / 60, 10) + ' :'));
-    }, 1000);
-    return seconds;
-  }
- /* Display the cards on the page
-   - shuffle the list of cards using the provided "shuffle" method below
- */
- shuffle(allCards);
 /*
-   - loop through each card and create its HTML
-   
-    - add each card's HTML to the page
+ * Display the cards on the page
+ *   - shuffle the list of cards using the provided "shuffle" method below
+ *   - loop through each card and create its HTML
+ *   - add each card's HTML to the page
  */
- for (var i = 0; i < allCards.length;i ++){
- 	container.append('<li class="card"><i class="fa fa-' + shuffleCards[i] + '"></i></li>')
- }
- 
 
-  
- 
 // Shuffle function from http://stackoverflow.com/a/2450976
 function shuffle(array) {
     var currentIndex = array.length, temporaryValue, randomIndex;
@@ -66,6 +43,21 @@ function shuffle(array) {
     return array;
 }
 
+//Initiate Game.
+function intGame(){
+	intTimer();
+	var cards = shuffle(icons);
+	$deck.empty();
+	match = 0;
+	steps = 0;
+	$stepCount.text('0');
+	#rating.removeClass('fa-star-o').addClass('fa-star');
+	for(var i = 0; i < cards.length; i ++){
+		$deck.append($('<li class="card"><i class="fa fa-' + cards[i] + '"></i></li>'))
+	}
+    addCardListener();
+
+};
 
 /*
  * set up the event listener for a card. If a card is clicked:
@@ -77,103 +69,64 @@ function shuffle(array) {
  *    + increment the move counter and display it on the page (put this functionality in another function that you call from this one)
  *    + if all cards have matched, display a message with the final score (put this functionality in another function that you call from this one)
  */
- var moveNum = 0;
- var matchNum = 0;
- var chosen = [];
 
-
-//add the card to a *list* of "open" cards 
-function clickCard(event){
-	if($(this).hasClass('open')){
-		return;
-	}
-	event.preventDefault();
-	var target = event.currentTarget;
-    $(event.target).addClass('open list');
-    chosen.push(target);
-    compare(chosen);
-    return chosen;
-}
-
-//compare the cards
-function compare(chosen){
-	for(var i = 0; i < chosen.length; i ++){
-		let card1 = chosen[0];
-		let card2 = chosen[1];
-		if (chosen.length >1){
-			cardMatched();
-		}else{
-			setTimeout(noMatched,500);
-			return false;
-		}
-	}
-}
-
-//if the cards do match, lock the cards in the open position
-function cardMatched(){
-	chosen.forEach(function(cards) {
-		cards.className = card.className + 'matchNum';
-		chosen = [];
-		matchNum ++;
-	});
-
-	if (matchNum === 16){
-		setTimeout(gameOver, 1000);
-	}
-	increment();
-}
-
-//if the cards do not match, remove the cards from the list and hide the card's symbol 
-function noMatched(){
-	chosen = [];
-	$('.card').removeClass('open list');
-	increment();
-}
-
-//increment the move counter and display it on the page
-function increment(){
-	moveNum++;
-	$('.move').text(moveNum);
-	starNum(moveNum);
-}
-
-//the number of star depends on the moves
-function starNum(move){
-	 if (move > 8) {
-      $('.stars').find('i').eq(2).removeClass('fa-star').addClass('fa-star-o');
-
-    }
-
-    if (move > 15) {
-      $('.stars').find('i').eq(1).removeClass('fa-star').addClass('fa-star-o');
-    }
-}
-
-//if all cards have matched, display a message with the final score
-function messageShow(){
-	var rating;
-	if(moveNum > 8 || seconds < 25){
-		rating = 1;
-	}
-	if(moveNum > 15 || seconds < 50){
+//set rating and scores
+function calRating(steps){
+	var rating = 3;
+	if(steps > rank3 && steps < rank2){
+		$rating.eq(2).removeClass('fa-star').addClass('fa-star-o');
 		rating = 2;
+	}else if(steps > rank2 && steps < rank1){
+		$rating.eq(1).removeClass('fa-star').addClass('fa-star-o');
+		rating = 1;
+	}else if(steps > rank1){
+		$rating.eq(0).removeClass('fa-star').addClass('fa-star-o');
+		rating = 0;
 	}
-    if(moveNum > 20 || seconds < 100){
-		rating = 3;
-	}
-	confirm('Your game is completed,and you won the game with ' + moveNum + 'steps. \n in ' +seconds.toFixed() + 'seconds. \n Your score is ' + rating + '\n Do you want to play again?');
-	if (true){
-		location.reload();
-		clearInterval(counter);
-	}else {
-		alert("Thank you for playing");
-		$('.container').hide();
-	}
+	return {score: rating};
 
+};
+
+//stop game and display the information about steps and score
+function endGame(steps, score){
+	stopTimer();
+	swal({
+		  allowEscapeKey:false,
+		  allowOutsideClick:false,
+		  title: 'You did a great job and Won!',
+		  text: 'With' + steps + 'steps and ' + score + 'Stars.\n Amazing! \n Time Taken: ' + minutesCount + 'Minutes and ' + secondsCount + 'seconds/',
+		  type: 'success',
+		  confirmButtonColor: '#00897b',
+		  confirmButtonText: 'Play again!'
+	}).then(function(isConfirm){
+		if(isConfirm){
+			startGame();
+		}
+	})
 }
 
-$('.restart').click(function(){
-	location.reload();
+//Restart Game
+$restart.bind('click', function(){
+	swal({
+		allowEscapeKey: false,
+		allowOutsideClick: false,
+		title: 'Wanna try again?',
+        text: "Start a new game and lost all progress!",
+        type: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#c62828',
+        cancelButtonColor: '#ff8a80',
+        confirmButtonText: 'Yes, restart!'
+	}).then(function(isConfirm){
+		if(isConfirm){
+			startGame();
+		}
+	})
 });
 
-initGame();
+var addCardListener = functin(){
+
+	//Flip Card
+	$deck.find('')
+}
+
